@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNegociacao } from '../../contexts/NegociacaoContext';
 import { acordosApi } from '../../api/acordos';
+import { useTracking } from '../../hooks/useTracking';
 import SuccessPopup from './SuccessPopup';
 import type { Parcelamento, EfetivarRequest } from '../../types';
 
@@ -26,6 +27,7 @@ function hoje(): string {
 
 export default function DadosAcordoModal({ parcelamento, valorDivida, onClose }: Props) {
   const { cliente } = useNegociacao();
+  const { track } = useTracking();
 
   const minDate = parcelamento.dataVencimentoMin || parcelamento.dataVencimento || hoje();
   const maxDate = parcelamento.dataVencimentoMax || parcelamento.dataVencimento || hoje();
@@ -38,6 +40,11 @@ export default function DadosAcordoModal({ parcelamento, valorDivida, onClose }:
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    track('ACORDO_INICIADO', {
+      pagina: '/oportunidades',
+      referencia: String(parcelamento.numeroParcelas),
+      dados: { valorTotal: parcelamento.valorTotal, numeroParcelas: parcelamento.numeroParcelas },
+    });
     return () => { document.body.style.overflow = ''; };
   }, []);
 
@@ -87,6 +94,11 @@ export default function DadosAcordoModal({ parcelamento, valorDivida, onClose }:
         setErro(result.mensagem || 'Não foi possível confirmar o acordo.');
         return;
       }
+      await track('ACORDO_CONFIRMADO', {
+        pagina: '/oportunidades',
+        referencia: String(parcelamento.numeroParcelas),
+        dados: { valorTotal: parcelamento.valorTotal, numeroParcelas: parcelamento.numeroParcelas },
+      });
       setSucesso(true);
     } catch {
       setErro('Erro inesperado. Tente novamente.');
@@ -250,7 +262,7 @@ export default function DadosAcordoModal({ parcelamento, valorDivida, onClose }:
           {/* Ações */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
             <button
-              onClick={onClose}
+              onClick={() => { track('BOTAO_VOLTAR_MODAL_ACORDO', { pagina: '/oportunidades', referencia: String(parcelamento.numeroParcelas) }); onClose(); }}
               style={{
                 flex: 1, padding: '0.7rem',
                 background: '#fff', border: '1.5px solid var(--brand-border)',

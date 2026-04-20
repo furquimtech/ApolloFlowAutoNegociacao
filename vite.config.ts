@@ -24,6 +24,12 @@ export default defineConfig(({ mode }) => {
           secure: true,
           headers: { host: apiHost },
         },
+        '/tracks': {
+          target: 'https://localhost:56876',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/tracks/, ''),
+        },
       },
     },
   }

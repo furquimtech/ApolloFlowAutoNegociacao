@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNegociacao } from '../contexts/NegociacaoContext';
 import { acordosApi } from '../api/acordos';
 import { propostasApi } from '../api/propostas';
+import { useTracking } from '../hooks/useTracking';
 import SuccessPopup from '../components/ui/SuccessPopup';
 import type { EfetivarRequest, Parcelamento } from '../types';
 
@@ -19,6 +20,7 @@ function hoje(): string {
 export default function Simulador() {
   const navigate = useNavigate();
   const { cliente, simulacao } = useNegociacao();
+  const { track } = useTracking();
 
   const todosParcelamentos = simulacao?.parcelamentos ?? [];
   const [idxSelecionado, setIdxSelecionado] = useState(0);
@@ -26,6 +28,10 @@ export default function Simulador() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
+
+  useEffect(() => {
+    if (cliente) track('PAGE_VIEW', { pagina: '/simulador' });
+  }, []);
 
   if (!cliente || !simulacao) {
     return (
@@ -88,6 +94,11 @@ export default function Simulador() {
         setErro(result.mensagem || 'Não foi possível enviar a proposta.');
         return;
       }
+      await track('SIMULACAO_PERSONALIZADA', {
+        pagina: '/simulador',
+        referencia: String(parcelamento.numeroParcelas),
+        dados: { valorTotal: parcelamento.valorTotal, numeroParcelas: parcelamento.numeroParcelas },
+      });
       setSucesso(true);
     } catch {
       setErro('Erro inesperado. Tente novamente.');

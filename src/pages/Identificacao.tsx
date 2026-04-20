@@ -5,6 +5,7 @@ import { contratosApi } from '../api/contratos';
 import { acordosApi } from '../api/acordos';
 import { useNegociacao } from '../contexts/NegociacaoContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTracking } from '../hooks/useTracking';
 import type { SimulacaoRequest } from '../types';
 
 function formatCpf(value: string): string {
@@ -48,9 +49,13 @@ export default function Identificacao() {
   const [mm, setMm] = useState('');
   const [yyyy, setYyyy] = useState('');
 
+  const { init, track } = useTracking();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Errors>({});
+
+  // Sem tracking antes da autenticação — init() só é chamado após login bem-sucedido
 
   function validate(): boolean {
     const errs: Errors = {};
@@ -124,6 +129,13 @@ export default function Identificacao() {
       setCliente(cliente);
       setContratos(contratos);
       setSimulacao(simResult.data);
+      // init() cria a sessão e ativa o tracking — nada é gravado antes deste ponto
+      await init({ clienteId: cliente.id, clienteCpf: rawCpf });
+      await track('LOGIN', {
+        pagina: '/',
+        referencia: cliente.id,
+        dados: { cpf: rawCpf, nome: cliente.nome },
+      });
       navigate('/oportunidades');
     } catch {
       setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');

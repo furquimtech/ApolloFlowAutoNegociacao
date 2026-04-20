@@ -8,12 +8,20 @@
       "Bash(node -e \"console.log\\(Buffer.from\\('FTECH:wujKowPtIFA6JPZpBjaZfYhj7vlqSLpYqWtSPlpUnfJaU'\\).toString\\('base64'\\)\\)\")",
       "Bash(npx tsc *)",
       "Bash(npm run *)",
-      "Bash(grep -E \"\\\\.cs$\")"
+      "Bash(grep -E \"\\\\.cs$\")",
+      "Bash(PGPASSWORD=f5vcn32k psql -U postgres -h localhost -p 5432 -c \"SELECT 1 FROM pg_database WHERE datname='apolloflow_tracks';\")",
+      "Bash(where psql *)",
+      "Read(//c/Program Files/PostgreSQL/**)",
+      "Read(//c/Program Files/PostgreSQL//**)",
+      "Bash(PGPASSWORD=f5vcn32k \"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h localhost -p 5432 -c \"SELECT 1 FROM pg_database WHERE datname='apolloflow_tracks';\")",
+      "Bash(PGPASSWORD=f5vcn32k \"/c/Program Files/PostgreSQL/18/bin/createdb\" -U postgres -h localhost -p 5432 apolloflow_tracks)",
+      "Bash(PGPASSWORD=f5vcn32k \"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h localhost -p 5432 -c \"SELECT datname FROM pg_database WHERE datname='apolloflow_tracks';\")"
     ],
     "additionalDirectories": [
       "C:\\gitf\\ApolloFlowFront\\public",
       "C:\\gitf\\auto-negociacao-api-moked\\MockData",
-      "C:\\gitf\\auto-negociacao-api-moked\\Controllers"
+      "C:\\gitf\\auto-negociacao-api-moked\\Controllers",
+      "C:\\gitf\\ApolloFlow\\ApolloFlowTracks"
     ]
   }
 }

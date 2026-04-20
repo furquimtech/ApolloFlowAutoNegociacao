@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNegociacao } from '../contexts/NegociacaoContext';
 import { acordosApi } from '../api/acordos';
+import { useTracking } from '../hooks/useTracking';
 import type { AcordoHistorico, ParcelaAcordo } from '../types';
 
 function fmtMoeda(value: string | number): string {
@@ -42,11 +43,13 @@ function situacaoBadge(situacao: string) {
 
 function ParcelasTable({ parcelas }: { parcelas: ParcelaAcordo[] }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const { track } = useTracking();
 
   async function handleBoleto(parcelaId: string) {
     setLoadingId(parcelaId);
     try {
       await acordosApi.baixarBoleto(parcelaId);
+      track('BOLETO_GERADO', { pagina: '/meus-acordos', referencia: parcelaId });
     } catch {
       alert('Não foi possível carregar o boleto. Tente novamente.');
     } finally {
@@ -167,6 +170,7 @@ function AcordoCard({ acordo }: { acordo: AcordoHistorico }) {
 export default function MeusAcordos() {
   const navigate = useNavigate();
   const { cliente } = useNegociacao();
+  const { track } = useTracking();
   const [acordos, setAcordos] = useState<AcordoHistorico[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
@@ -176,6 +180,7 @@ export default function MeusAcordos() {
       navigate('/');
       return;
     }
+    track('PAGE_VIEW', { pagina: '/meus-acordos' });
     acordosApi.listarPorCliente(cliente.id).then((result) => {
       if (result.sucesso && result.data) {
         setAcordos(result.data);

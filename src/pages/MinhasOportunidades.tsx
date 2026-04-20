@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNegociacao } from '../contexts/NegociacaoContext';
 import { acordosApi } from '../api/acordos';
+import { useTracking } from '../hooks/useTracking';
 import DadosAcordoModal from '../components/ui/DadosAcordoModal';
 import type { Parcelamento } from '../types';
 
@@ -35,10 +36,22 @@ function primeiroPrimeiroNome(nome: string): string {
 export default function MinhasOportunidades() {
   const navigate = useNavigate();
   const { cliente, contratos, simulacao } = useNegociacao();
+  const { track } = useTracking();
   const [modalParcelamento, setModalParcelamento] = useState<Parcelamento | null>(null);
   const [temAcordoAtivo, setTemAcordoAtivo] = useState(false);
 
   const ofertasHabilitadasCheck = simulacao?.parcelamentos.filter((p) => p.habilitado) ?? [];
+
+  useEffect(() => {
+    if (!cliente) return;
+    track('PAGE_VIEW', { pagina: '/oportunidades' });
+    if (ofertasHabilitadasCheck.length > 0) {
+      track('OFERTA_VISUALIZADA', {
+        pagina: '/oportunidades',
+        dados: { total: ofertasHabilitadasCheck.length },
+      });
+    }
+  }, [cliente]);
 
   useEffect(() => {
     if (!cliente || ofertasHabilitadasCheck.length > 0) return;
@@ -98,16 +111,18 @@ export default function MinhasOportunidades() {
         <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>
           Neste contrato, você possui {qtdDebitos} débito(s) no valor de {fmtMoeda(totalDebitos)}.
         </span>
-        <button style={{
-          background: 'transparent',
-          border: '1px solid rgba(255,255,255,0.5)',
-          color: '#fff',
-          borderRadius: 6,
-          padding: '0.35rem 0.9rem',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-        }}>
+        <button
+          onClick={() => track('BOTAO_VER_DETALHES_CONTRATO', { pagina: '/oportunidades' })}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.5)',
+            color: '#fff',
+            borderRadius: 6,
+            padding: '0.35rem 0.9rem',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}>
           Ver detalhes deste contrato
         </button>
       </div>
@@ -220,7 +235,14 @@ export default function MinhasOportunidades() {
 
                 {/* Botão */}
                 <button
-                  onClick={() => setModalParcelamento(oferta)}
+                  onClick={() => {
+                    track('OFERTA_SELECIONADA', {
+                      pagina: '/oportunidades',
+                      referencia: String(oferta.numeroParcelas),
+                      dados: { valorTotal: oferta.valorTotal, numeroParcelas: oferta.numeroParcelas },
+                    });
+                    setModalParcelamento(oferta);
+                  }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.4rem',
                     background: '#fff', border: '1.5px solid var(--brand-text-muted)',
@@ -262,7 +284,7 @@ export default function MinhasOportunidades() {
                     Você já possui um acordo ativo. Clique em Meus Acordos para visualizar e pagar seus boletos.
                   </p>
                   <button
-                    onClick={() => navigate('/meus-acordos')}
+                    onClick={() => { track('BOTAO_VER_MEUS_ACORDOS', { pagina: '/oportunidades' }); navigate('/meus-acordos'); }}
                     style={{
                       background: 'var(--brand-primary)', color: '#fff',
                       border: 'none', borderRadius: 8,
@@ -285,7 +307,7 @@ export default function MinhasOportunidades() {
         {/* Link personalizar */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
           <button
-            onClick={() => navigate('/simulador')}
+            onClick={() => { track('BOTAO_PERSONALIZAR_PROPOSTA', { pagina: '/oportunidades' }); navigate('/simulador'); }}
             style={{
               background: 'none', border: '1px solid var(--brand-text-muted)',
               borderRadius: 6, padding: '0.45rem 1rem',

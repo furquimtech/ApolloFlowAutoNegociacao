@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from './endpoints';
+import { trackApiCall } from '../tracking/tracker';
 import type { TokenResult } from '../types';
 
 const TOKEN_KEY = 'cobransaas_token';
@@ -55,10 +56,57 @@ async function getToken(): Promise<string> {
   return fetchToken();
 }
 
+// ── Instância axios dedicada para a API Cobransaas ───────────────────────────
+// Usar instância separada evita que os interceptors capturem chamadas do próprio
+// tracksApi (que usa o axios global), prevenindo loop infinito.
+const cobransaasAxios = axios.create();
+
+// Marca o momento do request para calcular duração na resposta
+cobransaasAxios.interceptors.request.use((config) => {
+  (config as Record<string, unknown>)._startMs = Date.now();
+  return config;
+});
+
+// Captura resposta bem-sucedida
+cobransaasAxios.interceptors.response.use(
+  (response) => {
+    const durationMs = Date.now() - ((response.config as Record<string, unknown>)._startMs as number ?? Date.now());
+    trackApiCall({
+      method: response.config.method ?? 'get',
+      url: response.config.url ?? '',
+      requestBody: response.config.data ? tryParse(response.config.data) : undefined,
+      responseStatus: response.status,
+      responseData: response.data,
+      durationMs,
+    });
+    return response;
+  },
+  (error) => {
+    if (axios.isAxiosError(error)) {
+      const durationMs = Date.now() - ((error.config as Record<string, unknown>)?._startMs as number ?? Date.now());
+      trackApiCall({
+        method: error.config?.method ?? 'get',
+        url: error.config?.url ?? '',
+        requestBody: error.config?.data ? tryParse(error.config.data) : undefined,
+        responseStatus: error.response?.status,
+        responseData: error.response?.data,
+        errorMessage: error.message,
+        durationMs,
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
+function tryParse(data: unknown): unknown {
+  if (typeof data !== 'string') return data;
+  try { return JSON.parse(data); } catch { return data; }
+}
+
 export const apiClient = {
   async get<T>(url: string): Promise<T> {
     const token = await getToken();
-    const response = await axios.get<T>(url, {
+    const response = await cobransaasAxios.get<T>(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -66,7 +114,7 @@ export const apiClient = {
 
   async post<T>(url: string, data: unknown): Promise<T> {
     const token = await getToken();
-    const response = await axios.post<T>(url, data, {
+    const response = await cobransaasAxios.post<T>(url, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -77,7 +125,7 @@ export const apiClient = {
 
   async getBlob(url: string): Promise<Blob> {
     const token = await getToken();
-    const response = await axios.get(url, {
+    const response = await cobransaasAxios.get(url, {
       headers: { Authorization: `Bearer ${token}` },
       responseType: 'blob',
     });
