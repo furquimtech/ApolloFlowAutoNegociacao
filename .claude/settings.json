@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/gitf/ApolloFlowFront/public/**)",
+      "Read(//c/gitf/auto-negociacao/**)",
+      "Read(//c/gitf/ApolloFlowFront/**)",
+      "Read(//c/gitf/auto-negociacao-api-moked/**)",
+      "Bash(node -e \"console.log\\(Buffer.from\\('FTECH:wujKowPtIFA6JPZpBjaZfYhj7vlqSLpYqWtSPlpUnfJaU'\\).toString\\('base64'\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(grep -E \"\\\\.cs$\")"
+    ],
+    "additionalDirectories": [
+      "C:\\gitf\\ApolloFlowFront\\public",
+      "C:\\gitf\\auto-negociacao-api-moked\\MockData",
+      "C:\\gitf\\auto-negociacao-api-moked\\Controllers"
+    ]
+  }
+}
