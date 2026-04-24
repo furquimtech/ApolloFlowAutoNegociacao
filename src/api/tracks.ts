@@ -3,6 +3,7 @@ import axios from 'axios';
 const BASE = '/tracks';
 const TOKEN_KEY = 'tracks_token';
 const TOKEN_EXPIRY_KEY = 'tracks_token_expiry';
+const INTEGRATION_TOKEN = import.meta.env.VITE_TRACKS_INTEGRATION_TOKEN as string | undefined;
 
 function getCachedToken(): string | null {
   const token = sessionStorage.getItem(TOKEN_KEY);
@@ -14,6 +15,8 @@ function getCachedToken(): string | null {
 }
 
 async function getToken(): Promise<string> {
+  if (INTEGRATION_TOKEN) return INTEGRATION_TOKEN;
+
   const cached = getCachedToken();
   if (cached) return cached;
 
@@ -60,9 +63,32 @@ async function iniciarSessao(payload: IniciarSessaoPayload): Promise<void> {
 export interface EventoPayload {
   sessionId: string;
   tipo: string;
+  cpf?: string;
   pagina?: string;
   referencia?: string;
   dados?: Record<string, unknown>;
+}
+
+export interface SolicitarCodigoPayload {
+  documento: string;
+  nome: string;
+  canal: 'email' | 'sms';
+  destino: string;
+  clienteId?: string;
+}
+
+export interface SolicitarCodigoResponse {
+  canal: 'email' | 'sms';
+  enviadoPara: string;
+  expiraEm: string;
+  mensagem: string;
+}
+
+export interface ValidarCodigoPayload {
+  documento: string;
+  canal: 'email' | 'sms';
+  destino: string;
+  codigo: string;
 }
 
 async function registrarEvento(payload: EventoPayload): Promise<void> {
@@ -75,4 +101,21 @@ async function registrarEvento(payload: EventoPayload): Promise<void> {
   );
 }
 
-export const tracksApi = { iniciarSessao, registrarEvento };
+async function solicitarCodigo(payload: SolicitarCodigoPayload): Promise<SolicitarCodigoResponse> {
+  return authed(async (t) => {
+    const response = await axios.post<SolicitarCodigoResponse>(
+      `${BASE}/api/verificacao/codigo`,
+      payload,
+      { headers: headers(t) }
+    );
+    return response.data;
+  });
+}
+
+async function validarCodigo(payload: ValidarCodigoPayload): Promise<void> {
+  await authed((t) =>
+    axios.post(`${BASE}/api/verificacao/validar`, payload, { headers: headers(t) })
+  );
+}
+
+export const tracksApi = { iniciarSessao, registrarEvento, solicitarCodigo, validarCodigo };

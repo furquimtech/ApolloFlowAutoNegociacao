@@ -26,6 +26,52 @@ export interface Cliente {
   dataConta: string;
   diasAtraso: string;
   supervisor: string | null;
+  emails?: ClienteEmail[];
+  enderecos?: ClienteEndereco[];
+  telefones?: ClienteTelefone[];
+}
+
+export interface ClienteEmail {
+  id: string;
+  idExterno: string;
+  email: string;
+  principal: boolean;
+  ranking: string | null;
+  usuarioCriador: string | null;
+  dataHoraModificacao: string;
+}
+
+export interface ClienteEndereco {
+  id: string;
+  idExterno: string;
+  cep: string;
+  codigoDne: string | null;
+  complemento: string | null;
+  logradouro: string;
+  bairro: string;
+  cidade: string;
+  numero: string;
+  tipo: string;
+  tipoLogradouro: string;
+  uf: string;
+  principal: boolean;
+  usuarioCriador: string | null;
+  ranking: string | null;
+  dataHoraModificacao: string;
+}
+
+export interface ClienteTelefone {
+  id: string;
+  idExterno: string;
+  ddd: string;
+  telefone: string;
+  ramal: string | null;
+  tipo: string;
+  principal: boolean;
+  usuarioCriador: string | null;
+  ranking: string | null;
+  cpc: string | null;
+  dataHoraModificacao: string;
 }
 
 /* ─── Contratos ───────────────────────────────────────── */
@@ -165,6 +211,7 @@ export interface Parcelamento {
   taxaOperacaoMax: string;
   parcelas: ParcelaSimulacao[];
   descontos: DescontoSimulacao[];
+  percentualDesconto: number;
 }
 
 export interface SimulacaoResponse {
@@ -181,11 +228,6 @@ export interface SimulacaoResponse {
 
 export interface SimulacaoParcelaInput {
   parcela: string;
-  descontoPrincipal: string;
-  descontoJuros: string;
-  descontoMora: string;
-  descontoMulta: string;
-  valorDesconto: string;
 }
 
 export interface SimulacaoRequest {

@@ -6,7 +6,13 @@ export const API_ENDPOINTS = {
   },
   CLIENTES: {
     BUSCAR_CPF: (cpf: string) =>
-      `${BASE()}/api/assessorias/clientes?mode=CONTINUABLE&page=0&size=2&cic=${cpf}`,
+      `${BASE()}/api/assessorias/clientes?selector=telefones,emails,enderecos&mode=CONTINUABLE&page=0&size=2&cic=${cpf}`,
+    TELEFONES: (clienteId: string) =>
+      `${BASE()}/api/assessorias/clientes/${clienteId}/telefones`,
+    ENDERECOS: (clienteId: string) =>
+      `${BASE()}/api/assessorias/clientes/${clienteId}/enderecos`,
+    EMAILS: (clienteId: string) =>
+      `${BASE()}/api/assessorias/clientes/${clienteId}/emails`,
   },
   CONTRATOS: {
     LISTAR: (clienteId: string) =>

@@ -1,9 +1,10 @@
 import { useRef } from 'react';
 import { getSessionId } from '../tracking/session';
-import { trackEvent, activateTracking } from '../tracking/tracker';
+import { trackEvent, activateTracking, setTrackingCpf } from '../tracking/tracker';
 import axios from 'axios';
 
 const TRACKS_BASE = '/tracks';
+const INTEGRATION_TOKEN = import.meta.env.VITE_TRACKS_INTEGRATION_TOKEN as string | undefined;
 
 export function useTracking() {
   const sessionId = useRef(getSessionId());
@@ -25,6 +26,7 @@ export function useTracking() {
         },
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
+      setTrackingCpf(opts?.clienteCpf);
       activateTracking();
       initialized.current = true;
     } catch {
@@ -50,6 +52,8 @@ export function useTracking() {
 
 // Token getter reutilizado pelo hook
 async function getTracksToken(): Promise<string> {
+  if (INTEGRATION_TOKEN) return INTEGRATION_TOKEN;
+
   const token = sessionStorage.getItem('tracks_token');
   const expiry = sessionStorage.getItem('tracks_token_expiry');
   if (token && expiry && Date.now() < Number(expiry)) return token;

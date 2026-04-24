@@ -6,6 +6,8 @@ import type { TokenResult } from '../types';
 const TOKEN_KEY = 'cobransaas_token';
 const TOKEN_EXPIRY_KEY = 'cobransaas_token_expiry';
 
+type TimedAxiosConfig = { _startMs?: number };
+
 function getCachedToken(): string | null {
   const token = sessionStorage.getItem(TOKEN_KEY);
   const expiry = sessionStorage.getItem(TOKEN_EXPIRY_KEY);
@@ -56,21 +58,16 @@ async function getToken(): Promise<string> {
   return fetchToken();
 }
 
-// ── Instância axios dedicada para a API Cobransaas ───────────────────────────
-// Usar instância separada evita que os interceptors capturem chamadas do próprio
-// tracksApi (que usa o axios global), prevenindo loop infinito.
 const cobransaasAxios = axios.create();
 
-// Marca o momento do request para calcular duração na resposta
 cobransaasAxios.interceptors.request.use((config) => {
-  (config as Record<string, unknown>)._startMs = Date.now();
+  (config as unknown as TimedAxiosConfig)._startMs = Date.now();
   return config;
 });
 
-// Captura resposta bem-sucedida
 cobransaasAxios.interceptors.response.use(
   (response) => {
-    const durationMs = Date.now() - ((response.config as Record<string, unknown>)._startMs as number ?? Date.now());
+    const durationMs = Date.now() - ((response.config as unknown as TimedAxiosConfig)._startMs ?? Date.now());
     trackApiCall({
       method: response.config.method ?? 'get',
       url: response.config.url ?? '',
@@ -83,7 +80,7 @@ cobransaasAxios.interceptors.response.use(
   },
   (error) => {
     if (axios.isAxiosError(error)) {
-      const durationMs = Date.now() - ((error.config as Record<string, unknown>)?._startMs as number ?? Date.now());
+      const durationMs = Date.now() - ((error.config as unknown as TimedAxiosConfig | undefined)?._startMs ?? Date.now());
       trackApiCall({
         method: error.config?.method ?? 'get',
         url: error.config?.url ?? '',

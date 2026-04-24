@@ -1,162 +1,93 @@
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
-import Button from '../components/ui/Button';
+import { useViewport } from '../hooks/useViewport';
 
 const SECTIONS = [
   {
-    title: '1. Quem somos',
-    content: `Este portal de negociação é operado pela Furquim Tecnologia em parceria com as empresas credoras. Somos responsáveis pelo tratamento dos seus dados pessoais durante o processo de negociação de dívidas realizado nesta plataforma.`,
+    title: '1. Objetivo desta politica',
+    content:
+      'Esta Politica de Privacidade explica como seus dados pessoais sao coletados, utilizados, armazenados e protegidos durante a utilizacao do portal de negociacao da TW Capital. O tratamento dos dados ocorre de acordo com a Lei Geral de Protecao de Dados Pessoais - LGPD.',
   },
   {
-    title: '2. Dados coletados',
-    content: `Coletamos apenas os dados estritamente necessários para viabilizar a negociação:
-• CPF e data de nascimento — para identificação e validação do titular;
-• Nome completo — para personalização do atendimento;
-• E-mail e telefone — para envio do boleto e comunicações sobre o acordo;
-• Dados do contrato e da dívida — para apresentação das opções de negociação.`,
+    title: '2. Quais dados podemos tratar',
+    content:
+      'Podemos tratar dados de identificacao, como nome, CPF, data de nascimento, telefone, e-mail e dados relacionados aos contratos e acordos exibidos no portal. Tambem podem ser tratados registros tecnicos de acesso, autenticacao e navegacao necessarios para seguranca da plataforma.',
   },
   {
-    title: '3. Finalidade do tratamento',
-    content: `Os dados coletados são utilizados exclusivamente para:
-• Verificar sua identidade (autenticação);
-• Consultar e exibir seus débitos em aberto;
-• Processar e formalizar o acordo de negociação;
-• Emitir e enviar o boleto bancário correspondente;
-• Cumprir obrigações legais e regulatórias.`,
+    title: '3. Finalidades do uso dos dados',
+    content:
+      'Os dados sao utilizados para validar sua identidade, permitir o acesso seguro ao portal, exibir contratos e acordos, enviar comunicacoes relacionadas a cobranca, gerar segunda via de boletos, registrar manifestacoes e cumprir obrigacoes legais e regulatorias.',
   },
   {
-    title: '4. Base legal (LGPD)',
-    content: `O tratamento dos seus dados está fundamentado nas seguintes bases legais previstas na Lei Geral de Proteção de Dados (Lei nº 13.709/2018):
-• Execução de contrato — para viabilizar a negociação da dívida;
-• Cumprimento de obrigação legal — para atender exigências regulatórias;
-• Legítimo interesse — para gestão de crédito e cobrança.`,
+    title: '4. Compartilhamento',
+    content:
+      'Os dados podem ser compartilhados com credores, parceiros operacionais, fornecedores de tecnologia, meios de pagamento e autoridades competentes, sempre dentro do limite necessario para execucao do servico, cumprimento de obrigacao legal ou exercicio regular de direitos.',
   },
   {
-    title: '5. Compartilhamento de dados',
-    content: `Seus dados podem ser compartilhados com:
-• A empresa credora titular da dívida negociada;
-• Instituições financeiras responsáveis pela emissão do boleto;
-• Órgãos reguladores e autoridades públicas, quando exigido por lei.
-
-Não vendemos, alugamos nem compartilhamos seus dados com terceiros para fins comerciais ou de marketing.`,
+    title: '5. Seguranca e armazenamento',
+    content:
+      'Adotamos medidas tecnicas e administrativas para proteger suas informacoes contra acesso nao autorizado, vazamento, alteracao ou destruicao indevida. Os dados sao armazenados apenas pelo periodo necessario para atender as finalidades descritas nesta politica e as exigencias legais aplicaveis.',
   },
   {
-    title: '6. Armazenamento e segurança',
-    content: `Seus dados são armazenados em servidores seguros com criptografia em trânsito (TLS/HTTPS) e em repouso. Adotamos medidas técnicas e organizacionais para proteger suas informações contra acesso não autorizado, alteração, divulgação ou destruição.
-
-Os dados são retidos pelo período mínimo necessário ao cumprimento das finalidades descritas nesta política e das obrigações legais aplicáveis.`,
+    title: '6. Seus direitos',
+    content:
+      'Voce pode solicitar confirmacao da existencia de tratamento, acesso, correcao, atualizacao, anonimização, bloqueio ou eliminacao de dados, quando cabivel. Tambem pode pedir informacoes sobre compartilhamento e apresentar requerimentos relacionados aos seus direitos previstos na LGPD.',
   },
   {
-    title: '7. Seus direitos',
-    content: `Nos termos da LGPD, você tem direito a:
-• Confirmar a existência de tratamento dos seus dados;
-• Acessar os dados que possuímos sobre você;
-• Corrigir dados incompletos, inexatos ou desatualizados;
-• Solicitar a eliminação dos dados desnecessários ou excessivos;
-• Revogar o consentimento, quando aplicável;
-• Obter informações sobre o compartilhamento de dados.
-
-Para exercer seus direitos, entre em contato conosco pelo e-mail: privacidade@furquimtecnologia.com.br`,
-  },
-  {
-    title: '8. Cookies e rastreamento',
-    content: `Este portal não utiliza cookies de rastreamento ou ferramentas de análise de terceiros. A sessão é mantida exclusivamente em memória do navegador, sem persistência local de dados sensíveis, e é encerrada automaticamente após 5 minutos de inatividade.`,
-  },
-  {
-    title: '9. Alterações nesta política',
-    content: `Esta Política de Privacidade pode ser atualizada periodicamente. Em caso de alterações relevantes, a data de atualização será revisada. Recomendamos a leitura periódica deste documento.`,
-  },
-  {
-    title: '10. Contato',
-    content: `Furquim Tecnologia
-E-mail: privacidade@furquimtecnologia.com.br
-Encarregado de Dados (DPO): disponível no mesmo endereço de e-mail.`,
+    title: '7. Contato',
+    content:
+      'Para assuntos relacionados a privacidade, protecao de dados ou exercicio de direitos, entre em contato com nosso canal de atendimento informado no portal. Recomendamos incluir seu nome completo e CPF para agilizar a analise da solicitacao.',
   },
 ];
 
 export default function PoliticaPrivacidade() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { isMobile } = useViewport();
 
   return (
-    <div
-      className="animate-fade-in-up"
-      style={{
-        background: 'var(--brand-surface)',
-        borderRadius: 'var(--brand-radius)',
-        boxShadow: 'var(--brand-shadow)',
-        padding: '2.5rem 2rem',
-      }}
-    >
-      {/* Cabeçalho */}
-      <div style={{ marginBottom: '2rem', borderBottom: '1px solid var(--brand-border)', paddingBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <img
-            src={theme.logoUrl}
-            alt={theme.companyName}
-            style={{ height: 40, objectFit: 'contain' }}
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        </div>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--brand-primary)', marginBottom: '0.4rem' }}>
-          Política de Privacidade
-        </h1>
-        <p style={{ color: 'var(--brand-text-muted)', fontSize: '0.85rem' }}>
-          Portal de Negociação — {theme.companyName} &amp; Furquim Tecnologia
-          <br />
-          Última atualização: março de 2026
-        </p>
-      </div>
-
-      {/* Introdução */}
-      <p style={{ color: 'var(--brand-text-muted)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '2rem' }}>
-        Esta Política de Privacidade descreve como coletamos, utilizamos, armazenamos e protegemos
-        os seus dados pessoais quando você utiliza nosso Portal de Negociação. Ao usar este portal,
-        você concorda com as práticas descritas neste documento, em conformidade com a{' '}
-        <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.
-      </p>
-
-      {/* Seções */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-        {SECTIONS.map((s) => (
-          <section key={s.title}>
-            <h2
-              style={{
-                fontSize: '0.95rem',
-                fontWeight: 700,
-                color: 'var(--brand-primary)',
-                marginBottom: '0.5rem',
-              }}
-            >
-              {s.title}
-            </h2>
-            <p
-              style={{
-                fontSize: '0.875rem',
-                color: 'var(--brand-text-muted)',
-                lineHeight: 1.75,
-                whiteSpace: 'pre-line',
-              }}
-            >
-              {s.content}
-            </p>
-          </section>
-        ))}
-      </div>
-
-      {/* Rodapé da página */}
-      <div
+    <div style={{ padding: isMobile ? '1rem 0.75rem 1.5rem' : '1.35rem 1rem 2rem', width: '100%', maxWidth: 980, margin: '0 auto' }}>
+      <button
+        onClick={() => navigate(-1)}
         style={{
-          marginTop: '2.5rem',
-          paddingTop: '1.5rem',
-          borderTop: '1px solid var(--brand-border)',
-          display: 'flex',
-          justifyContent: 'flex-start',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'none',
+          border: 'none',
+          color: '#7a2fa2',
+          fontWeight: 800,
+          cursor: 'pointer',
+          marginBottom: '1rem',
+          padding: 0,
         }}
       >
-        <Button variant="secondary" onClick={() => navigate('/')}>
-          Voltar ao portal
-        </Button>
+        <span style={{ fontSize: '1.1rem' }}>‹</span>
+        Voltar
+      </button>
+
+      <div
+        style={{
+          background: '#fff',
+          border: '1px solid #f0ebf4',
+          borderRadius: 28,
+          boxShadow: '0 18px 40px rgba(89, 58, 128, 0.08)',
+          padding: isMobile ? '1.2rem 1rem' : '1.6rem 1.6rem 1.8rem',
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <h1 style={{ margin: 0, color: '#7a2fa2', fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 900 }}>Politicas de Privacidade</h1>
+          <p style={{ margin: '0.4rem 0 0', color: '#66666d', fontSize: isMobile ? '0.84rem' : '0.92rem' }}>
+            Ultima atualizacao: abril de 2026
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+          {SECTIONS.map((section) => (
+            <section key={section.title}>
+              <h2 style={{ margin: '0 0 0.35rem', color: '#fa3650', fontSize: '1rem', fontWeight: 900 }}>{section.title}</h2>
+              <p style={{ margin: 0, color: '#585962', fontSize: '0.9rem', lineHeight: 1.7 }}>{section.content}</p>
+            </section>
+          ))}
+        </div>
       </div>
     </div>
   );

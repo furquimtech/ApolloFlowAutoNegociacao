@@ -2,10 +2,23 @@ import axios from 'axios';
 import { getSessionId } from './session';
 
 const TRACKS_BASE = '/tracks';
+const CLIENT_CPF_KEY = 'tracks_cliente_cpf';
+const INTEGRATION_TOKEN = import.meta.env.VITE_TRACKS_INTEGRATION_TOKEN as string | undefined;
 
 // Tracking só fica ativo após login — nada é gravado antes da autenticação
 let trackingActive = false;
 export function activateTracking(): void { trackingActive = true; }
+export function setTrackingCpf(cpf?: string): void {
+  if (!cpf) {
+    sessionStorage.removeItem(CLIENT_CPF_KEY);
+    return;
+  }
+  sessionStorage.setItem(CLIENT_CPF_KEY, cpf);
+}
+
+export function getTrackingCpf(): string | undefined {
+  return sessionStorage.getItem(CLIENT_CPF_KEY) ?? undefined;
+}
 const TOKEN_KEY = 'tracks_token';
 const TOKEN_EXPIRY_KEY = 'tracks_token_expiry';
 
@@ -19,6 +32,8 @@ function getCachedToken(): string | null {
 }
 
 async function getToken(): Promise<string> {
+  if (INTEGRATION_TOKEN) return INTEGRATION_TOKEN;
+
   const cached = getCachedToken();
   if (cached) return cached;
 
@@ -41,6 +56,7 @@ function truncate(obj: unknown, maxLen = 50_000): string {
 
 export interface TrackEventOpts {
   tipo: string;
+  cpf?: string;
   pagina?: string;
   referencia?: string;
   dados?: Record<string, unknown>;
@@ -57,6 +73,7 @@ export function trackEvent(opts: TrackEventOpts): void {
         {
           sessionId,
           tipo: opts.tipo,
+          cpf: opts.cpf ?? getTrackingCpf(),
           pagina: opts.pagina ?? window.location.pathname,
           referencia: opts.referencia,
           dados: opts.dados ? truncate(opts.dados) : undefined,
@@ -80,6 +97,7 @@ export interface ApiCallData {
 export function trackApiCall(data: ApiCallData): void {
   trackEvent({
     tipo: 'API_CALL',
+    cpf: getTrackingCpf(),
     pagina: window.location.pathname,
     referencia: `${data.method.toUpperCase()} ${data.url}`,
     dados: {
